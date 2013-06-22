@@ -1,5 +1,4 @@
-xml2rfc = "/usr/local/bin/xml2rfc"
-saxpath = "$(HOME)/java/saxon-8-9-j/saxon8.jar"
+saxpath = saxon-8.9.jar
 saxon = java -classpath $(saxpath) net.sf.saxon.Transform -novw -l
 
 draft_title = draft-ietf-httpbis-http2
@@ -38,18 +37,21 @@ clean:
 	rm -f $(draft_title)*.txt
 	rm -f $(draft_title)*.html
 
-%.html: %.xml $(stylesheet)
+%.html: %.xml $(stylesheet) $(saxpath)
 	$(saxon) $< $(stylesheet) > $@
 	$(sed_i) -e"s*</style>*</style><style tyle='text/css'>$(extra_style)</style>*" $@
 
-%.redxml: %.xml $(reduction)
+%.redxml: %.xml $(reduction) $(saxpath)
 	$(saxon) $< $(reduction) > $@
 
 %.txt: %.redxml
-	$(xml2rfc) $< $@
+	xml2rfc $< $@
 
-%.xhtml: %.xml ../../rfc2629xslt/rfc2629toXHTML.xslt
+%.xhtml: %.xml ../../rfc2629xslt/rfc2629toXHTML.xslt $(saxpath)
 	$(saxon) $< ../../rfc2629xslt/rfc2629toXHTML.xslt > $@
+
+saxon-8.9.jar:
+	curl -O http://dist.wso2.org/maven2/net/sf/saxon/saxon/8.9/saxon-8.9.jar
 
 # backup issues
 .PHONY: issues
